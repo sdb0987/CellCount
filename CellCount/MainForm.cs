@@ -219,7 +219,12 @@ namespace CellCount
                     ? "이 폴더에는 이미지 파일(jpg, png, bmp, tif)이 없습니다."
                     : $"이미지 {_items.Count}장을 불러왔습니다. [검출 시작]을 누르세요.";
 
-                if (dgvFiles.Rows.Count > 0) dgvFiles.CurrentCell = dgvFiles.Rows[0].Cells["colFile"];
+                if (dgvFiles.Rows.Count > 0)
+                {
+                    dgvFiles.CurrentCell = dgvFiles.Rows[0].Cells["colFile"];
+                    // 첫 행이 이미 현재 행이면 SelectionChanged 가 오지 않으므로 직접 표시한다
+                    if (_current == null && dgvFiles.Rows[0].Tag is ImageItem first) ShowItem(first);
+                }
             }
             catch (Exception ex)
             {
