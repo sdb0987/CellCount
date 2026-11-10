@@ -107,6 +107,7 @@ CellCount\
   Program.cs              GUI / --cli 배치 모드
   MainForm.cs             화면 로직
   Yolo\Yolo26.cs          ONNX Runtime 추론 (전처리, 출력 해석, Threshold·중복 제거)
+  Yolo\OnnxRuntimeLoader.cs  onnxruntime.dll 을 먼저 불러 보고, 실패하면 빠진 DLL 과 해결 방법 안내
   Core\ImageItem.cs       파일명 해석, 폴더 스캔
   Core\ResultsReport.cs   Results Report.xlsx 생성 (엑셀, 하위 폴더별 시트)
   Controls\ImageViewer.cs 확대/이동 가능한 결과 뷰어
@@ -119,6 +120,11 @@ Training\                 의사 라벨 생성, 학습, 내보내기, 평가 스
 결과 파일은 엑셀 통합 문서(`Results Report.xlsx`)다. 배치는 참조 CSV 와 같고(1행 = 위치, A열 = Lot, B열 = 샘플), 하위 폴더가 여러 개면 폴더마다 시트를 만든다. 저장 경로 확장자를 `.csv` 로 주면 예전 CSV 형식으로 저장한다.
 
 점수 0.05 이상의 후보를 모두 보관하므로 Threshold 를 바꿔도 다시 추론하지 않는다.
+
+배포: 빌드 폴더(`CellCount\bin\Release\net10.0-windows`)를 `runtimes` 폴더까지 통째로 복사한다. 실행 PC 에는 .NET 10 Desktop Runtime(x64)만 있으면 된다.
+onnxruntime.dll 은 Visual C++ 런타임(`vcruntime140`, `vcruntime140_1`, `msvcp140`, `msvcp140_1.dll`)이 필요한데 .NET 은 필요 없어서, 이 런타임이 없는 PC 에서는 프로그램은 뜨지만 검출할 때 "The type initializer for 'Microsoft.ML.OnnxRuntime.NativeMethods' threw an exception." 이 났다.
+그래서 빌드할 때 빌드 PC 의 런타임 DLL 을 실행 폴더에 함께 복사하고, 그래도 불러오지 못하면 빠진 파일과 해결 방법(vc_redist.x64.exe 설치)을 보여 준다.
+`CellCount.exe --cli` 로 실행하면 `runtime:` 줄에 실제로 불러온 DLL 의 버전과 위치가 나온다.
 
 ## 8. 정확도를 올리는 순서
 

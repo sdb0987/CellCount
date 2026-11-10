@@ -25,4 +25,29 @@
     </None>
   </ItemGroup>
 
+  <!--
+    onnxruntime.dll 은 Visual C++ 런타임(x64)이 있어야 로드된다. (.NET 자체는 필요 없음)
+    재배포 패키지가 없는 PC 에서도 폴더 복사만으로 실행되도록, 빌드 PC 에 설치된 런타임 DLL 을 실행 폴더에 함께 복사한다.
+    실행 시 Yolo\OnnxRuntimeLoader.cs 가 이 DLL 들을 먼저 불러온다.
+    다른 위치에서 가져오려면: dotnet build -p:VcRuntimeDir=폴더
+  -->
+  <PropertyGroup>
+    <VcRuntimeDir Condition="'$(VcRuntimeDir)' == '' and '$([System.Environment]::Is64BitProcess)' == 'true'">$(SystemRoot)\System32</VcRuntimeDir>
+    <!-- 32비트 MSBuild 에서는 System32 가 SysWOW64(32비트 DLL)로 바뀌므로 Sysnative 로 64비트 폴더를 연다 -->
+    <VcRuntimeDir Condition="'$(VcRuntimeDir)' == ''">$(SystemRoot)\Sysnative</VcRuntimeDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <VcRuntimeDll Include="$(VcRuntimeDir)\vcruntime140.dll;$(VcRuntimeDir)\vcruntime140_1.dll;$(VcRuntimeDir)\msvcp140.dll;$(VcRuntimeDir)\msvcp140_1.dll" />
+    <None Include="@(VcRuntimeDll->Exists())" Link="%(Filename)%(Extension)" Visible="false">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="WarnMissingVcRuntime" BeforeTargets="Build">
+    <Warning Condition="!Exists('%(VcRuntimeDll.FullPath)')"
+             Text="Visual C++ 런타임 파일이 없어 실행 폴더에 복사하지 못했습니다: %(VcRuntimeDll.FullPath). 이 빌드를 실행하는 PC 에는 VC++ 재배포 패키지(x64)가 설치되어 있어야 합니다." />
+  </Target>
+
 </Project>

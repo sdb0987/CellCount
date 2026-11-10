@@ -64,6 +64,7 @@ namespace CellCount
                 using (var yolo = new Yolo26(model, gpu))
                 {
                     Console.WriteLine($"model={Path.GetFileName(model)} device={yolo.Device} input={yolo.InputWidth}x{yolo.InputHeight} images={items.Count} conf={conf} iou={iou}");
+                    Console.WriteLine("runtime: " + OnnxRuntimeLoader.Describe());
                     foreach (var item in items)
                     {
                         var sw = Stopwatch.StartNew();
@@ -81,7 +82,8 @@ namespace CellCount
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex);
+                // OnnxRuntimeLoadException 은 메시지에 원인과 해결 방법이 다 들어 있으므로 스택은 생략
+                Console.Error.WriteLine(ex is OnnxRuntimeLoadException ? ex.Message : ex.ToString());
                 return 1;
             }
         }

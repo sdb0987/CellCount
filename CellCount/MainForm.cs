@@ -350,6 +350,18 @@ namespace CellCount
             item.ApplyThreshold(_conf, _iou);
         }
 
+        /// <summary>
+        /// 예외 메시지에 내부 예외 메시지를 이어 붙인다.
+        /// (TypeInitializationException 처럼 바깥 메시지만으로는 원인을 알 수 없는 예외가 있다)
+        /// </summary>
+        private static string DescribeError(Exception ex)
+        {
+            string text = ex.Message;
+            for (Exception inner = ex.InnerException; inner != null; inner = inner.InnerException)
+                if (!text.Contains(inner.Message)) text += "\n" + inner.Message;
+            return text;
+        }
+
         private async Task RunBatchAsync()
         {
             if (_running) return;
@@ -398,7 +410,7 @@ namespace CellCount
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, "검출 중 오류가 발생했습니다.\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "검출 중 오류가 발생했습니다.\n" + DescribeError(ex), Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -501,7 +513,7 @@ namespace CellCount
                 }
                 catch (Exception ex)
                 {
-                    lblStatus.Text = "검출 실패: " + ex.Message.Replace("\n", " ");
+                    lblStatus.Text = "검출 실패: " + DescribeError(ex).Replace("\r", "").Replace("\n", " ");
                     return;
                 }
                 if (IsDisposed) return;

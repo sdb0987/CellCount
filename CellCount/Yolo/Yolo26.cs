@@ -34,6 +34,10 @@ namespace YD.AI.Yolo
 
         public Yolo26(string modelPath, bool useGpu)
         {
+            // 네이티브 DLL 을 먼저 직접 불러 본다. 실패하면 'NativeMethods 형식 이니셜라이저' 오류 대신
+            // 빠진 DLL 과 해결 방법이 담긴 OnnxRuntimeLoadException 이 난다.
+            OnnxRuntimeLoader.EnsureLoaded();
+
             ModelPath = modelPath;
             Device = "CPU";
 
